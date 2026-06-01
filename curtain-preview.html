@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lily Allspaugh — Curtain Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:   #16140F;
+      --white: #F6F4EF;
+      --gold:  #C2A878;
+      --faint: #827C70;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--ink);
+      overflow: hidden;
+    }
+
+    /* ── REVEAL TEXT (behind curtains) ───────────────────────── */
+    .stage {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1;
+    }
+
+    .reveal {
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    .reveal-eye {
+      font-family: 'Jost', sans-serif;
+      font-weight: 200;
+      font-size: .56rem;
+      letter-spacing: .52em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeIn .9s ease forwards 2.4s;
+    }
+
+    .reveal-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(4.5rem, 9vw, 10rem);
+      line-height: .9;
+      color: var(--white);
+      opacity: 0;
+      transform: translateY(10px);
+      animation: nameUp 1.2s cubic-bezier(.16,1,.3,1) forwards 2.2s;
+    }
+
+    .reveal-name span { display: block; }
+    .reveal-name .it  { font-style: italic; padding-left: .06em; }
+
+    .reveal-rule {
+      height: 1px; width: 0;
+      background: var(--gold);
+      margin-top: 28px;
+      animation: ruleIn .8s ease forwards 3.2s;
+    }
+
+    .reveal-sub {
+      font-family: 'Jost', sans-serif;
+      font-weight: 200;
+      font-size: .56rem;
+      letter-spacing: .44em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-top: 12px;
+      opacity: 0;
+      animation: fadeIn .7s ease forwards 3.6s;
+    }
+
+    @keyframes nameUp  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn  { to { opacity: 1; } }
+    @keyframes ruleIn  { to { width: 60px; } }
+
+    /* ── CURTAIN PANELS ──────────────────────────────────────── */
+
+    /* Left panel: covers left half of viewport */
+    .curt-left {
+      position: fixed;
+      top: 0; left: 0;
+      width: 50%; height: 100%;
+      overflow: hidden;
+      z-index: 20;
+      /* Soft shadow on inner (right) edge for fabric depth */
+      box-shadow: inset -40px 0 80px rgba(22, 18, 12, .18);
+      animation: openLeft 2.2s cubic-bezier(.76, 0, .24, 1) forwards 1.0s,
+                 curtOut  .6s ease forwards 3.8s;
+    }
+
+    /* Right panel: covers right half of viewport */
+    .curt-right {
+      position: fixed;
+      top: 0; left: 50%;
+      width: 50%; height: 100%;
+      overflow: hidden;
+      z-index: 20;
+      /* Soft shadow on inner (left) edge */
+      box-shadow: inset 40px 0 80px rgba(22, 18, 12, .18);
+      animation: openRight 2.2s cubic-bezier(.76, 0, .24, 1) forwards 1.0s,
+                 curtOut   .6s ease forwards 3.8s;
+    }
+
+    /* Video inside each panel fills the full viewport width */
+    .curt-vid {
+      position: absolute;
+      top: 0;
+      width: 100vw;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Left panel video: starts at left edge → shows left half */
+    .curt-left .curt-vid  { left: 0; }
+
+    /* Right panel video: shifted left by 50vw → shows right half */
+    .curt-right .curt-vid { left: -50vw; }
+
+    /* A slight warm veil on top of the video so colors feel more fabric-like */
+    .curt-left::after,
+    .curt-right::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(248, 244, 238, .08);
+      pointer-events: none;
+    }
+
+    /* ── OPEN KEYFRAMES ──────────────────────────────────────── */
+    @keyframes openLeft {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    @keyframes openRight {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes curtOut {
+      to { opacity: 0; visibility: hidden; pointer-events: none; }
+    }
+
+    /* ── CENTER SEAM COVER (hides video sync gap) ────────────── */
+    /* A thin vertical strip that masks any tiny gap at the join */
+    .seam {
+      position: fixed;
+      top: 0; left: calc(50% - 2px);
+      width: 4px; height: 100%;
+      z-index: 25;
+      background: #F0EAE0;
+      animation: openLeft 2.2s cubic-bezier(.76, 0, .24, 1) forwards 1.0s,
+                 curtOut  .6s ease forwards 3.8s;
+    }
+
+    /* ── REPLAY ──────────────────────────────────────────────── */
+    .replay-btn {
+      position: fixed;
+      bottom: 44px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      background: none;
+      border: 1px solid rgba(130,124,112,.35);
+      color: var(--faint);
+      font-family: 'Jost', sans-serif;
+      font-weight: 200;
+      font-size: .54rem;
+      letter-spacing: .4em;
+      text-transform: uppercase;
+      padding: 13px 34px;
+      cursor: pointer;
+      opacity: 0;
+      transition: color .25s, border-color .25s;
+      animation: fadeIn .7s ease forwards 5.0s;
+    }
+    .replay-btn:hover { color: var(--white); border-color: var(--gold); }
+
+    /* ── LABEL ───────────────────────────────────────────────── */
+    .preview-badge {
+      position: fixed;
+      top: 28px; right: 32px;
+      z-index: 5;
+      font-family: 'Jost', sans-serif;
+      font-weight: 200;
+      font-size: .48rem;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      color: rgba(130,124,112,.5);
+      opacity: 0;
+      animation: fadeIn .5s ease forwards 5.5s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- REVEAL TEXT -->
+  <div class="stage">
+    <div class="reveal">
+      <p class="reveal-eye">Interior Design Studio</p>
+      <h1 class="reveal-name">
+        <span>Lily</span>
+        <span class="it">Allspaugh</span>
+      </h1>
+      <div class="reveal-rule"></div>
+      <p class="reveal-sub">Nashville, Tennessee</p>
+    </div>
+  </div>
+
+  <!-- CENTER SEAM COVER -->
+  <div class="seam"></div>
+
+  <!-- LEFT CURTAIN PANEL -->
+  <div class="curt-left" id="cl">
+    <video class="curt-vid" autoplay muted playsinline loop id="vl">
+      <source src="curtain-fabric.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- RIGHT CURTAIN PANEL -->
+  <div class="curt-right" id="cr">
+    <video class="curt-vid" autoplay muted playsinline loop id="vr">
+      <source src="curtain-fabric.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- REPLAY -->
+  <button class="replay-btn" id="replay">↺  Replay</button>
+  <span class="preview-badge">Animation Preview</span>
+
+  <script>
+    // Keep both videos in sync from the start
+    const vl = document.getElementById('vl');
+    const vr = document.getElementById('vr');
+
+    Promise.all([
+      new Promise(r => vl.addEventListener('canplay', r, { once: true })),
+      new Promise(r => vr.addEventListener('canplay', r, { once: true })),
+    ]).then(() => {
+      vl.currentTime = 0;
+      vr.currentTime = 0;
+      vl.play();
+      vr.play();
+    });
+
+    document.getElementById('replay').addEventListener('click', () => location.reload());
+  </script>
+
+</body>
+</html>
